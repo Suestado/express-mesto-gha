@@ -1,9 +1,13 @@
 const { statusNotFound, statusServerError } = require('../utils/constants');
 const { ProcessingError } = require('../utils/errors');
 
+function throwError() {
+  throw new ProcessingError('Не действительный путь до ресурса');
+}
+
 const badRoute = (req, res) => {
   try {
-    throw new ProcessingError('Не действительный путь до ресурса');
+    throwError();
   } catch (err) {
     if (err instanceof ProcessingError) {
       res.status(statusNotFound);
