@@ -4,7 +4,7 @@ const {
   statusCreated,
   statusModified,
   statusNotFound,
-  statusServerError,
+  statusServerError, statusBadRequest,
 } = require('../utils/constants');
 const { ProcessingError } = require('../utils/errors');
 
@@ -36,18 +36,14 @@ const createCard = (req, res) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      if (!card) {
-        throw new ProcessingError('Ошибка при создании карточки');
-      } else {
-        res.status(statusCreated);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
-      }
+      res.status(statusCreated);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: card });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'ValidationError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Карточка не может быть создана. Проверьте введенные данные' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -89,18 +85,14 @@ const setLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        throw new ProcessingError('Карточка с таким ID не была найдена');
-      } else {
-        res.status(statusModified);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
-      }
+      res.status(statusModified);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: card });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Карточка с таким ID не была найдена' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -118,18 +110,14 @@ const deleteLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        throw new ProcessingError('Карточка с таким ID не была найдена');
-      } else {
-        res.status(statusModified);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
-      }
+      res.status(statusModified);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: card });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Карточка с таким ID не была найдена' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });

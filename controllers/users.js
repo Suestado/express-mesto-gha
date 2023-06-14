@@ -4,6 +4,7 @@ const {
   statusCreated,
   statusModified,
   statusNotFound,
+  statusBadRequest,
   statusServerError,
 } = require('../utils/constants');
 const { ProcessingError } = require('../utils/errors');
@@ -34,17 +35,14 @@ const getParticularUser = (req, res) => {
 
   User.findById(userId)
     .then((user) => {
-      if (!user) {
-        throw new ProcessingError('Пользователь с таким ID не найден');
-      }
       res.status(statusOk);
       res.header('Content-Type', 'application/json');
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Введен некорректный ID пользователя' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -57,18 +55,14 @@ const createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => {
-      if (!user) {
-        throw new ProcessingError('Ошибка при создании пользователя');
-      } else {
-        res.status(statusCreated);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: user });
-      }
+      res.status(statusCreated);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: user });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'ValidationError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Пользователь не может быть создан. Проверьте введенные данные' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -83,21 +77,20 @@ const updateUserInfo = (req, res) => {
   User.findByIdAndUpdate(
     userId,
     newData,
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((user) => {
-      if (!user) {
-        throw new ProcessingError('Пользователь с таким ID не найден');
-      } else {
-        res.status(statusModified);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: user });
-      }
+      res.status(statusModified);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: user });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'ValidationError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Ошибка обновления данных пользователя. Проверьте введенные данные' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
