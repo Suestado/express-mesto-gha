@@ -2,7 +2,6 @@ const express = require('express');
 const { connect: mongooseConnect, connection: mongooseConnection } = require('mongoose');
 const bodyParser = require('body-parser');
 const router = require('./routes/router');
-const middlewares = require('./middlewares/middlewares');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -12,7 +11,13 @@ mongooseConnection.on('error', (err) => console.log(`Ошибка подключ
 mongooseConnection.once('open', () => console.log('Подключение к базе данных установлено'));
 
 app.use(bodyParser.json());
-app.use(middlewares);
+app.use((req, res, next) => {
+  req.user = {
+    _id: '6486fbb7d9a4e3794867fab2',
+  };
+  next();
+});
+
 app.use(router);
 
 app.listen(PORT, () => {
