@@ -41,7 +41,7 @@ const getParticularUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(statusBadRequest);
+        res.status(statusNotFound);
         res.send({ message: 'Введен некорректный ID пользователя' });
       } else {
         res.status(statusServerError);

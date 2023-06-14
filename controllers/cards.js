@@ -56,18 +56,14 @@ const deleteCard = (req, res) => {
 
   Card.findByIdAndRemove(cardId)
     .then((card) => {
-      if (!card) {
-        throw new ProcessingError('Карточка с таким ID не была найдена для удаления');
-      } else {
-        res.status(statusOk);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
-      }
+      res.status(statusOk);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: card });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
+      if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Карточка с таким ID не была найдена' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -91,7 +87,7 @@ const setLike = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(statusBadRequest);
+        res.status(statusNotFound);
         res.send({ message: 'Карточка с таким ID не была найдена' });
       } else {
         res.status(statusServerError);
@@ -116,7 +112,7 @@ const deleteLike = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(statusBadRequest);
+        res.status(statusNotFound);
         res.send({ message: 'Карточка с таким ID не была найдена' });
       } else {
         res.status(statusServerError);
