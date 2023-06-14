@@ -8,6 +8,19 @@ const {
 } = require('../utils/constants');
 const { ProcessingError } = require('../utils/errors');
 
+function processErrors(err, req, res) {
+  if (err.name === 'NotFoundError') {
+    res.status(statusNotFound);
+    res.send({ message: err.message });
+  } else if (err.name === 'CastError') {
+    res.status(statusBadRequest);
+    res.send({ message: 'Введен некорректный ID карточки' });
+  } else {
+    res.status(statusServerError);
+    res.send({ message: `Внутренняя ошибка сервера: ${err}` });
+  }
+}
+
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
@@ -56,18 +69,16 @@ const deleteCard = (req, res) => {
 
   Card.findByIdAndRemove(cardId)
     .then((card) => {
-      res.status(statusOk);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: card });
+      if (!card) {
+        throw new ProcessingError('Карточка не была найдена');
+      } else {
+        res.status(statusOk);
+        res.header('Content-Type', 'application/json');
+        res.send({ data: card });
+      }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(statusBadRequest);
-        res.send({ message: 'Карточка с таким ID не была найдена' });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
+      processErrors (err, req, res)
     });
 };
 
@@ -93,16 +104,7 @@ const setLike = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(statusBadRequest);
-        res.send({ message: 'Введен некорректный ID карточки' });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
+      processErrors (err, req, res)
     });
 };
 
@@ -125,16 +127,7 @@ const deleteLike = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
-      } else if (err.name === 'CastError') {
-        res.status(statusBadRequest);
-        res.send({ message: 'Введен некорректный ID карточки' });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
+      processErrors (err, req, res)
     });
 };
 
