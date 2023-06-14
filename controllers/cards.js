@@ -78,7 +78,7 @@ const deleteCard = (req, res) => {
       }
     })
     .catch((err) => {
-      processErrors (err, req, res)
+      processErrors(err, req, res);
     });
 };
 
@@ -104,7 +104,7 @@ const setLike = (req, res) => {
       }
     })
     .catch((err) => {
-      processErrors (err, req, res)
+      processErrors(err, req, res);
     });
 };
 
@@ -127,7 +127,7 @@ const deleteLike = (req, res) => {
       }
     })
     .catch((err) => {
-      processErrors (err, req, res)
+      processErrors(err, req, res);
     });
 };
 
