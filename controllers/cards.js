@@ -78,17 +78,27 @@ const setLike = (req, res) => {
   Card.findByIdAndUpdate(
     cardId,
     { $addToSet: { likes: user } },
-    { new: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .then((card) => {
-      res.status(statusModified);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: card });
+      if (!card) {
+        throw new ProcessingError('Карточка не была найдена');
+      } else {
+        res.status(statusModified);
+        res.header('Content-Type', 'application/json');
+        res.send({ data: card });
+      }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NotFoundError') {
         res.status(statusNotFound);
-        res.send({ message: 'Карточка с таким ID не была найдена' });
+        res.send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Введен некорректный ID карточки' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
@@ -106,14 +116,21 @@ const deleteLike = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      res.status(statusModified);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: card });
+      if (!card) {
+        throw new ProcessingError('Карточка не была найдена');
+      } else {
+        res.status(statusModified);
+        res.header('Content-Type', 'application/json');
+        res.send({ data: card });
+      }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NotFoundError') {
         res.status(statusNotFound);
-        res.send({ message: 'Карточка с таким ID не была найдена' });
+        res.send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(statusBadRequest);
+        res.send({ message: 'Введен некорректный ID карточки' });
       } else {
         res.status(statusServerError);
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });

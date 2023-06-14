@@ -35,13 +35,20 @@ const getParticularUser = (req, res) => {
 
   User.findById(userId)
     .then((user) => {
-      res.status(statusOk);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: user });
+      if (!user) {
+        throw new ProcessingError('Пользователи не найдены');
+      } else {
+        res.status(statusOk);
+        res.header('Content-Type', 'application/json');
+        res.send({ data: user });
+      }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NotFoundError') {
         res.status(statusNotFound);
+        res.send({ message: err.message });
+      } else if (err.name === 'CastError') {
+        res.status(statusBadRequest);
         res.send({ message: 'Введен некорректный ID пользователя' });
       } else {
         res.status(statusServerError);
