@@ -24,22 +24,13 @@ function processErrors(err, req, res) {
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      if (cards.length === 0) {
-        throw new ProcessingError('Карточки не найдены');
-      } else {
-        res.status(statusOk);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: cards });
-      }
+      res.status(statusOk);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: cards });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
+      res.status(statusServerError);
+      res.send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
