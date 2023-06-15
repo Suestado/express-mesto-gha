@@ -27,7 +27,7 @@ const cardSchema = new Schema({
   },
   createdAt: {
     type: 'date',
-    default: Date.now(),
+    default: Date.now,
   },
 });
 

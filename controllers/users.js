@@ -1,3 +1,5 @@
+const { CastError, ValidationError } = require('mongoose').MongooseError;
+
 const User = require('../models/users');
 const {
   statusOk,
@@ -12,21 +14,13 @@ const { ProcessingError } = require('../utils/errors');
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
-      if (users.length === 0) {
-        throw new ProcessingError('Пользователи не найдены');
-      }
       res.status(statusOk);
       res.header('Content-Type', 'application/json');
       res.send({ data: users });
     })
     .catch((err) => {
-      if (err instanceof ProcessingError) {
-        res.status(statusNotFound);
-        res.send({ message: err.message });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
+      res.status(statusServerError);
+      res.send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -36,7 +30,7 @@ const getParticularUser = (req, res) => {
   User.findById(userId)
     .then((user) => {
       if (!user) {
-        throw new ProcessingError('Пользователи не найдены');
+        throw new ProcessingError('Пользователь не найден');
       } else {
         res.status(statusOk);
         res.header('Content-Type', 'application/json');
@@ -44,10 +38,10 @@ const getParticularUser = (req, res) => {
       }
     })
     .catch((err) => {
-      if (err.name === 'NotFoundError') {
+      if (err instanceof ProcessingError) {
         res.status(statusNotFound);
         res.send({ message: err.message });
-      } else if (err.name === 'CastError') {
+      } else if (err instanceof CastError) {
         res.status(statusBadRequest);
         res.send({ message: 'Введен некорректный ID пользователя' });
       } else {
@@ -67,7 +61,7 @@ const createUser = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof ValidationError) {
         res.status(statusBadRequest);
         res.send({ message: 'Пользователь не может быть создан. Проверьте введенные данные' });
       } else {
@@ -95,7 +89,7 @@ const updateUserInfo = (req, res) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof ValidationError) {
         res.status(statusBadRequest);
         res.send({ message: 'Ошибка обновления данных пользователя. Проверьте введенные данные' });
       } else {

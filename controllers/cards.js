@@ -1,3 +1,5 @@
+const { CastError, ValidationError } = require('mongoose').MongooseError;
+
 const Card = require('../models/cards');
 const {
   statusOk,
@@ -9,10 +11,10 @@ const {
 const { ProcessingError } = require('../utils/errors');
 
 function processErrors(err, req, res) {
-  if (err.name === 'NotFoundError') {
+  if (err instanceof ProcessingError) {
     res.status(statusNotFound);
     res.send({ message: err.message });
-  } else if (err.name === 'CastError') {
+  } else if (err instanceof CastError) {
     res.status(statusBadRequest);
     res.send({ message: 'Введен некорректный ID карточки' });
   } else {
@@ -45,7 +47,7 @@ const createCard = (req, res) => {
       res.send({ data: card });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof ValidationError) {
         res.status(statusBadRequest);
         res.send({ message: 'Карточка не может быть создана. Проверьте введенные данные' });
       } else {
