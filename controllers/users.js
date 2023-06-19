@@ -71,10 +71,7 @@ const createUser = (req, res) => {
     });
 };
 
-const updateUserInfo = (req, res) => {
-  const userId = req.user._id;
-  const newData = req.body;
-
+function updateUserInfo(req, res, userId, newData) {
   User.findByIdAndUpdate(
     userId,
     newData,
@@ -97,11 +94,36 @@ const updateUserInfo = (req, res) => {
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
       }
     });
-};
+}
+
+function changeUserDataWrapper(func) {
+  return function (req, res) {
+    const userId = req.user._id;
+    const newData = {
+      name: req.body.name,
+      about: req.body.about,
+    };
+    func(req, res, userId, newData);
+  };
+}
+
+function changeUserAvatarWrapper(func) {
+  return function (req, res) {
+    const userId = req.user._id;
+    const newData = {
+      avatar: req.body.avatar,
+    };
+    func(req, res, userId, newData);
+  };
+}
+
+const changeUserData = changeUserDataWrapper(updateUserInfo);
+const changeUserAvatar = changeUserAvatarWrapper(updateUserInfo);
 
 module.exports = {
   getUsers,
   getParticularUser,
   createUser,
-  updateUserInfo,
+  changeUserData,
+  changeUserAvatar,
 };
