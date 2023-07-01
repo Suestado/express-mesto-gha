@@ -1,4 +1,7 @@
 const { CastError, ValidationError } = require('mongoose').MongooseError;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const SECRET_KEY = require('../utils/constants');
 
 const User = require('../models/users');
 const {
@@ -8,8 +11,56 @@ const {
   statusNotFound,
   statusBadRequest,
   statusServerError,
+  statusConflictError,
 } = require('../utils/constants');
 const { ProcessingError } = require('../utils/errors');
+
+const createUser = (req, res) => {
+  const { email, password, name, about, avatar } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then(hash => User.create({ email, password: hash, name, about, avatar }))
+    .then((user) => {
+      res.status(statusCreated);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.errors.email.kind === 'unique') {
+        res.status(statusConflictError);
+        res.send({ message: 'Пользователь с таким email уже существует' });
+      } else if (err instanceof ValidationError) {
+        res.status(statusBadRequest);
+        res.send({ message: 'Пользователь не может быть создан. Проверьте введенные данные' });
+      } else {
+        res.status(statusServerError);
+        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
+      }
+    });
+};
+
+const logIn = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign(
+        { _id: user._id },
+        `${SECRET_KEY}`,
+        { expiresIn: 3600 * 24 * 7 });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600 * 24 * 7,
+          httpOnly: true,
+        })
+        .end();
+    })
+    .catch((err) => {
+      res
+        .status(401)
+        .send({ message: err.message });
+    });
+};
 
 const getUsers = (req, res) => {
   User.find({})
@@ -24,9 +75,7 @@ const getUsers = (req, res) => {
     });
 };
 
-const getParticularUser = (req, res) => {
-  const { userId } = req.params;
-
+function findUserById(res, userId) {
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -49,27 +98,24 @@ const getParticularUser = (req, res) => {
         res.send({ message: `Внутренняя ошибка сервера: ${err}` });
       }
     });
-};
+}
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+function getParticularUserWrapper(func) {
+  return function (req, res) {
+    const { userId } = req.params;
+    func(res, userId);
+  };
+}
 
-  User.create({ name, about, avatar })
-    .then((user) => {
-      res.status(statusCreated);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err instanceof ValidationError) {
-        res.status(statusBadRequest);
-        res.send({ message: 'Пользователь не может быть создан. Проверьте введенные данные' });
-      } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
-      }
-    });
-};
+function getUserMeWrapper(func) {
+  return function (req, res) {
+    const userId = req.user._id;
+    func(res, userId);
+  };
+}
+
+const getParticularUser = getParticularUserWrapper(findUserById);
+const getUserMe = getUserMeWrapper(findUserById);
 
 function updateUserInfo(req, res, userId, newData) {
   User.findByIdAndUpdate(
@@ -121,6 +167,8 @@ const changeUserData = changeUserDataWrapper(updateUserInfo);
 const changeUserAvatar = changeUserAvatarWrapper(updateUserInfo);
 
 module.exports = {
+  logIn,
+  getUserMe,
   getUsers,
   getParticularUser,
   createUser,

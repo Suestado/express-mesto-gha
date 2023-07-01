@@ -10,13 +10,6 @@ mongooseConnection.on('error', (err) => console.log(`Ошибка подключ
 mongooseConnection.once('open', () => console.log('Подключение к базе данных установлено'));
 
 app.use(express.json());
-app.use((req, res, next) => {
-  req.user = {
-    _id: '6486fbb7d9a4e3794867fab2',
-  };
-  next();
-});
-
 app.use(router);
 
 app.listen(PORT, () => {

@@ -59,15 +59,25 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   const { cardId } = req.params;
+  const userId = req.user._id;
 
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
-      if (!card) {
-        throw new ProcessingError('Карточка не была найдена');
+      const ownerId = card.owner.valueOf();
+
+      if (ownerId !== userId) {
+        throw new ProcessingError('Нет прав на удаление карточки');
       } else {
-        res.status(statusOk);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
+        Card.findByIdAndRemove(cardId)
+          .then((card) => {
+            if (!card) {
+              throw new ProcessingError('Карточка не была найдена');
+            } else {
+              res.status(statusOk);
+              res.header('Content-Type', 'application/json');
+              res.send({ data: card });
+            }
+          });
       }
     })
     .catch((err) => {
