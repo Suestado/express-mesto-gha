@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcryptjs');
-const BadRequest = require('../utils/errors/BadRequest');
+const StatusDenied = require('../utils/errors/StatusDenied');
 
 const userSchema = new Schema({
   email: {
@@ -39,17 +39,25 @@ userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(new BadRequest('Неправильные почта или пароль'));
+        return Promise.reject(new StatusDenied('Неправильные почта или пароль'));
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            return Promise.reject(new BadRequest('Неправильные почта или пароль'));
+            return Promise.reject(new StatusDenied('Неправильные почта или пароль'));
           }
           return (user);
         });
     });
 };
+
+userSchema.set('toJSON', {
+  function(doc, ret) {
+    const newRet = ret;
+    delete newRet.password;
+    return newRet;
+  },
+});
 
 userSchema.plugin(uniqueValidator);
 

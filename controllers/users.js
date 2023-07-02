@@ -54,16 +54,17 @@ const logIn = (req, res, next) => {
         `${SECRET_KEY}`,
         { expiresIn: 3600 * 24 * 7 },
       );
-      res
-        .cookie(
-          'jwt',
-          token,
-          {
-            maxAge: 3600 * 24 * 7,
-            httpOnly: true,
-          },
-        )
-        .end();
+      res.cookie(
+        'jwt',
+        token,
+        {
+          maxAge: 3600 * 24 * 7,
+          httpOnly: true,
+        },
+      );
+      res.status(statusOk);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: user });
     })
     .catch((err) => {
       next(err);
