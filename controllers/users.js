@@ -13,6 +13,37 @@ const {
   statusModified,
 } = require('../utils/constants');
 
+const createUser = (req, res, next) => {
+  const {
+    email,
+    password,
+    name,
+    about,
+    avatar,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create(
+      {
+        email, password: hash, name, about, avatar,
+      },
+    ))
+    .then((user) => {
+      res.status(statusCreated);
+      res.header('Content-Type', 'application/json');
+      res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.errors?.email?.kind === 'unique') {
+        next(new ConflictRequest('Пользователь с таким email уже существует'));
+      } else if (err instanceof ValidationError) {
+        next(new BadRequest('Пользователь не может быть создан. Проверьте введенные данные'));
+      } else {
+        next(err);
+      }
+    });
+};
+
 const logIn = (req, res, next) => {
   const { email, password } = req.body;
 
@@ -37,38 +68,6 @@ const logIn = (req, res, next) => {
     })
     .catch((err) => {
       next(err);
-    });
-};
-
-const createUser = (req, res, next) => {
-  const {
-    email,
-    password,
-    name,
-    about,
-    avatar,
-  } = req.body;
-
-  bcrypt.hash(password, 10)
-    .then((hash) => User.create(
-      {
-        email, password: hash, name, about, avatar,
-      },
-    ))
-    .then((user) => {
-      logIn(req, res, next);
-      // res.status(statusCreated);
-      // res.header('Content-Type', 'application/json');
-      // res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.errors?.email?.kind === 'unique') {
-        next(new ConflictRequest('Пользователь с таким email уже существует'));
-      } else if (err instanceof ValidationError) {
-        next(new BadRequest('Пользователь не может быть создан. Проверьте введенные данные'));
-      } else {
-        next(err);
-      }
     });
 };
 
