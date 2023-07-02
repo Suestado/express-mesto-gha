@@ -51,13 +51,11 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     });
 };
 
-userSchema.set('toJSON', {
-  function(doc, ret) {
-    const newRet = ret;
-    delete newRet.password;
-    return newRet;
-  },
-});
+userSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
 userSchema.plugin(uniqueValidator);
 
