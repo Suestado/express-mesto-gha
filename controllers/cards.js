@@ -1,6 +1,6 @@
 const { CastError, ValidationError } = require('mongoose').MongooseError;
-const { BadRequest } = require('../utils/errors/BadRequest');
-const { NotFound } = require('../utils/errors/NotFound');
+const BadRequest = require('../utils/errors/BadRequest');
+const NotFound = require('../utils/errors/NotFound');
 
 const Card = require('../models/cards');
 const {

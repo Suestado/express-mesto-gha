@@ -1,7 +1,7 @@
 const { Schema, model } = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const bcrypt = require('bcryptjs');
-const { BadRequest } = require('../utils/errors/BadRequest');
+const BadRequest = require('../utils/errors/BadRequest');
 
 const userSchema = new Schema({
   email: {

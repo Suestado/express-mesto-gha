@@ -1,4 +1,4 @@
-const { NotFound } = require('../utils/errors/NotFound');
+const NotFound = require('../utils/errors/NotFound');
 
 function throwError() {
   throw new NotFound('Не действительный путь до ресурса');
