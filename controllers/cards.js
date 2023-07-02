@@ -1,6 +1,7 @@
 const { CastError, ValidationError } = require('mongoose').MongooseError;
 const BadRequest = require('../utils/errors/BadRequest');
 const NotFound = require('../utils/errors/NotFound');
+const StatusDenied = require('../utils/errors/StatusDenied');
 
 const Card = require('../models/cards');
 const {
@@ -57,7 +58,7 @@ const deleteCard = (req, res, next) => {
       if (!card) {
         throw new NotFound('Карточка не была найдена');
       } else if (card.owner.valueOf() !== userId) {
-        throw new BadRequest('Нет прав на удаление карточки');
+        throw new StatusDenied('Нет прав на удаление карточки');
       } else {
         Card.findByIdAndRemove(cardId)
           .then((deletedCard) => {

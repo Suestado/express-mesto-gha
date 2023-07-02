@@ -5,6 +5,7 @@ const validateUserDataJoi = require('../middlewares/validateUserDataJoi');
 const validateCardDataJoi = require('../middlewares/validateCardDataJoi');
 const validateUserGetByIDJoi = require('../middlewares/validateUserGetByIDJoi');
 const validateCardGetByIDJoi = require('../middlewares/validateCardGetByIDJoi');
+const validateUserUpdateJoi = require('../middlewares/validateUserUpdateJoi');
 const errorsGlobalHandler = require('../middlewares/errorsGlobalHandler');
 
 const {
@@ -33,8 +34,8 @@ router.use(auth);
 router.get('/users/me', getUserMe);
 router.get('/users', getUsers);
 router.get('/users/:userId', validateUserGetByIDJoi, getParticularUser);
-router.patch('/users/me', validateUserDataJoi, changeUserData);
-router.patch('/users/me/avatar', validateUserDataJoi, changeUserAvatar);
+router.patch('/users/me', validateUserUpdateJoi, changeUserData);
+router.patch('/users/me/avatar', validateUserUpdateJoi, changeUserAvatar);
 
 router.get('/cards', getCards);
 router.post('/cards', validateCardDataJoi, createCard);
