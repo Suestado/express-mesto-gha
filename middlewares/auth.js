@@ -1,13 +1,12 @@
-const SECRET_KEY = require('../utils/constants');
 const jwt = require('jsonwebtoken');
+const SECRET_KEY = require('../utils/constants');
+const { StatusDenied } = require('../utils/errors/StatusDenied');
 
 module.exports = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return res.status(401).send({
-      message: 'Необходима авторизация',
-    });
+    throw new StatusDenied('Необходима авторизация');
   }
 
   const token = authorization.replace('Bearer ', '');
@@ -16,12 +15,9 @@ module.exports = (req, res, next) => {
   try {
     payload = jwt.verify(token, `${SECRET_KEY}`);
   } catch (err) {
-    console.log(err);
-    return res.status(401).send({
-      message: 'Необходима авторизация',
-    });
+    next(new StatusDenied('Необходима авторизация'));
   }
 
-  req.user = payload
+  req.user = payload;
   next();
 };

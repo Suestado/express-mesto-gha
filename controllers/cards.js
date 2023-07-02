@@ -1,29 +1,23 @@
 const { CastError, ValidationError } = require('mongoose').MongooseError;
+const { BadRequest } = require('../utils/errors/BadRequest');
+const { NotFound } = require('../utils/errors/NotFound');
 
 const Card = require('../models/cards');
 const {
   statusOk,
   statusCreated,
   statusModified,
-  statusNotFound,
-  statusServerError, statusBadRequest,
 } = require('../utils/constants');
-const { ProcessingError } = require('../utils/errors');
 
-function processErrors(err, req, res) {
-  if (err instanceof ProcessingError) {
-    res.status(statusNotFound);
-    res.send({ message: err.message });
-  } else if (err instanceof CastError) {
-    res.status(statusBadRequest);
-    res.send({ message: 'Введен некорректный ID карточки' });
+function processErrors(err, req, res, next) {
+  if (err instanceof CastError) {
+    next(new BadRequest('Введен некорректный ID карточки'));
   } else {
-    res.status(statusServerError);
-    res.send({ message: `Внутренняя ошибка сервера: ${err}` });
+    next(err);
   }
 }
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
       res.status(statusOk);
@@ -31,12 +25,11 @@ const getCards = (req, res) => {
       res.send({ data: cards });
     })
     .catch((err) => {
-      res.status(statusServerError);
-      res.send({ message: `Внутренняя ошибка сервера: ${err}` });
+      next(err);
     });
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
@@ -48,44 +41,38 @@ const createCard = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof ValidationError) {
-        res.status(statusBadRequest);
-        res.send({ message: 'Карточка не может быть создана. Проверьте введенные данные' });
+        next(new BadRequest('Карточка не может быть создана. Проверьте введенные данные'));
       } else {
-        res.status(statusServerError);
-        res.send({ message: `Внутренняя ошибка сервера: ${err}` });
+        next(err);
       }
     });
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   const userId = req.user._id;
 
   Card.findById(cardId)
     .then((card) => {
-      const ownerId = card.owner.valueOf();
-
-      if (ownerId !== userId) {
-        throw new ProcessingError('Нет прав на удаление карточки');
+      if (!card) {
+        throw new NotFound('Карточка не была найдена');
+      } else if (card.owner.valueOf() !== userId) {
+        throw new BadRequest('Нет прав на удаление карточки');
       } else {
         Card.findByIdAndRemove(cardId)
-          .then((card) => {
-            if (!card) {
-              throw new ProcessingError('Карточка не была найдена');
-            } else {
-              res.status(statusOk);
-              res.header('Content-Type', 'application/json');
-              res.send({ data: card });
-            }
+          .then((deletedCard) => {
+            res.status(statusOk);
+            res.header('Content-Type', 'application/json');
+            res.send({ data: deletedCard });
           });
       }
     })
     .catch((err) => {
-      processErrors(err, req, res);
+      processErrors(err, req, res, next);
     });
 };
 
-const setLike = (req, res) => {
+const setLike = (req, res, next) => {
   const { cardId } = req.params;
   const user = req.user._id;
 
@@ -99,7 +86,7 @@ const setLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        throw new ProcessingError('Карточка не была найдена');
+        throw new NotFound('Карточка не была найдена');
       } else {
         res.status(statusModified);
         res.header('Content-Type', 'application/json');
@@ -107,11 +94,11 @@ const setLike = (req, res) => {
       }
     })
     .catch((err) => {
-      processErrors(err, req, res);
+      processErrors(err, req, res, next);
     });
 };
 
-const deleteLike = (req, res) => {
+const deleteLike = (req, res, next) => {
   const { cardId } = req.params;
   const user = req.user._id;
 
@@ -122,7 +109,7 @@ const deleteLike = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        throw new ProcessingError('Карточка не была найдена');
+        throw new NotFound('Карточка не была найдена');
       } else {
         res.status(statusModified);
         res.header('Content-Type', 'application/json');
@@ -130,7 +117,7 @@ const deleteLike = (req, res) => {
       }
     })
     .catch((err) => {
-      processErrors(err, req, res);
+      processErrors(err, req, res, next);
     });
 };
 

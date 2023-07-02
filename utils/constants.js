@@ -7,9 +7,9 @@ const statusNotFound = httpConstants.HTTP_STATUS_NOT_FOUND;
 const statusBadRequest = httpConstants.HTTP_STATUS_BAD_REQUEST;
 const statusServerError = httpConstants.HTTP_STATUS_INTERNAL_SERVER_ERROR;
 const statusConflictError = httpConstants.HTTP_STATUS_CONFLICT;
+const statusDenied = httpConstants.HTTP_STATUS_UNAUTHORIZED;
 
 const SECRET_KEY = '31bf9fcad3e346819659afb7e1270dc7161985a7b6e7c85e6246b389e33754ad';
-
 
 module.exports = {
   statusOk,
@@ -19,5 +19,6 @@ module.exports = {
   statusBadRequest,
   statusServerError,
   statusConflictError,
+  statusDenied,
   SECRET_KEY,
 };

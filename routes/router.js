@@ -1,8 +1,8 @@
 const router = require('express').Router();
+const { errors } = require('celebrate');
 const auth = require('../middlewares/auth');
 const validateUserPost = require('../middlewares/validateUserPost');
 const validateCardPost = require('../middlewares/validateCardPost');
-const { errors } = require('celebrate');
 const errorsGlobalHandler = require('../middlewares/errorsGlobalHandler');
 
 const {
