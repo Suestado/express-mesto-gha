@@ -34,7 +34,7 @@ const createUser = (req, res, next) => {
       res.send({ data: user });
     })
     .catch((err) => {
-      if (err.errors.email.kind === 'unique') {
+      if (err.errors?.email?.kind === 'unique') {
         next(new ConflictRequest('Пользователь с таким email уже существует'));
       } else if (err instanceof ValidationError) {
         next(new BadRequest('Пользователь не может быть создан. Проверьте введенные данные'));
