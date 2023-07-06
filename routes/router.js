@@ -1,12 +1,10 @@
 const router = require('express').Router();
-const { errors } = require('celebrate');
 const auth = require('../middlewares/auth');
 const validateUserDataJoi = require('../middlewares/validateUserDataJoi');
 const validateCardDataJoi = require('../middlewares/validateCardDataJoi');
 const validateUserGetByIDJoi = require('../middlewares/validateUserGetByIDJoi');
 const validateCardGetByIDJoi = require('../middlewares/validateCardGetByIDJoi');
 const validateUserUpdateJoi = require('../middlewares/validateUserUpdateJoi');
-const errorsGlobalHandler = require('../middlewares/errorsGlobalHandler');
 
 const {
   logIn,
@@ -44,8 +42,5 @@ router.put('/cards/:cardId/likes', validateCardGetByIDJoi, setLike);
 router.delete('/cards/:cardId/likes', validateCardGetByIDJoi, deleteLike);
 
 router.use('*', badRoute);
-
-router.use(errors());
-router.use(errorsGlobalHandler);
 
 module.exports = router;

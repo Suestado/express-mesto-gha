@@ -29,9 +29,7 @@ const createUser = (req, res, next) => {
       },
     ))
     .then((user) => {
-      res.status(statusCreated);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: user });
+      res.status(statusCreated).send({ data: user });
     })
     .catch((err) => {
       if (err.errors?.email?.kind === 'unique') {
@@ -62,9 +60,7 @@ const logIn = (req, res, next) => {
           httpOnly: true,
         },
       );
-      res.status(statusOk);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: user });
+      res.status(statusOk).send({ data: user });
     })
     .catch((err) => {
       next(err);
@@ -74,9 +70,7 @@ const logIn = (req, res, next) => {
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      res.status(statusOk);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: users });
+      res.status(statusOk).send({ data: users });
     })
     .catch((err) => {
       next(err);
@@ -89,9 +83,7 @@ function findUserById(res, userId, next) {
       if (!user) {
         throw new NotFound('Пользователь не найден');
       } else {
-        res.status(statusOk);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: user });
+        res.status(statusOk).send({ data: user });
       }
     })
     .catch((err) => {
@@ -130,9 +122,7 @@ function updateUserInfo(req, res, userId, newData, next) {
     },
   )
     .then((user) => {
-      res.status(statusModified);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: user });
+      res.status(statusModified).send({ data: user });
     })
     .catch((err) => {
       if (err instanceof ValidationError) {

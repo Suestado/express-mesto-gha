@@ -10,6 +10,10 @@ const statusConflictError = httpConstants.HTTP_STATUS_CONFLICT;
 const statusDenied = httpConstants.HTTP_STATUS_UNAUTHORIZED;
 const statusForbidden = httpConstants.HTTP_STATUS_FORBIDDEN;
 
+const linkRegExp = /^https?[-a-zA-Z0-9@:%_+.~#?&/=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_+.~#?&/=]*)?$/;
+const urlRegExp = /[-a-zA-Z0-9@:%_+.~#?&/=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_+.~#?&/=]*)?/;
+const emailRegExp = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+.[a-zA-Z]{2,4}$/;
+
 const SECRET_KEY = '31bf9fcad3e346819659afb7e1270dc7161985a7b6e7c85e6246b389e33754ad';
 
 module.exports = {
@@ -23,4 +27,7 @@ module.exports = {
   statusDenied,
   statusForbidden,
   SECRET_KEY,
+  linkRegExp,
+  urlRegExp,
+  emailRegExp,
 };

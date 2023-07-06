@@ -21,9 +21,7 @@ function processErrors(err, req, res, next) {
 const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      res.status(statusOk);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: cards });
+      res.status(statusOk).send({ data: cards });
     })
     .catch((err) => {
       next(err);
@@ -36,9 +34,7 @@ const createCard = (req, res, next) => {
 
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(statusCreated);
-      res.header('Content-Type', 'application/json');
-      res.send({ data: card });
+      res.status(statusCreated).send({ data: card });
     })
     .catch((err) => {
       if (err instanceof ValidationError) {
@@ -62,9 +58,7 @@ const deleteCard = (req, res, next) => {
       } else {
         Card.findByIdAndRemove(cardId)
           .then((deletedCard) => {
-            res.status(statusOk);
-            res.header('Content-Type', 'application/json');
-            res.send({ data: deletedCard });
+            res.status(statusOk).send({ data: deletedCard });
           });
       }
     })
@@ -89,9 +83,7 @@ const setLike = (req, res, next) => {
       if (!card) {
         throw new NotFound('Карточка не была найдена');
       } else {
-        res.status(statusModified);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
+        res.status(statusModified).send({ data: card });
       }
     })
     .catch((err) => {
@@ -112,9 +104,7 @@ const deleteLike = (req, res, next) => {
       if (!card) {
         throw new NotFound('Карточка не была найдена');
       } else {
-        res.status(statusModified);
-        res.header('Content-Type', 'application/json');
-        res.send({ data: card });
+        res.status(statusModified).send({ data: card });
       }
     })
     .catch((err) => {

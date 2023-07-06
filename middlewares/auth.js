@@ -3,7 +3,7 @@ const SECRET_KEY = require('../utils/constants');
 const StatusDenied = require('../utils/errors/StatusDenied');
 
 module.exports = (req, res, next) => {
-  const token = req.headers.cookie?.replace('jwt=', '');
+  const token = req.cookies.jwt;
 
   if (!token) {
     throw new StatusDenied('Необходима авторизация');
